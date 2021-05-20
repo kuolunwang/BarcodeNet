@@ -4,19 +4,34 @@ import torch.nn.functional as F
 from torchvision.models.resnet import ResNet
 import torchvision.transforms as transforms
 from torchvision import models
+import numpy as np
+import cv2
 from carafe import CARAFEPack
 n_class = 2
+
+block_cfg = {
+    'resnet18': BasicBlock,
+    'resnet34': BasicBlock,
+    'resnet50': Bottleneck,
+    'resnet101': Bottleneck,
+    'resnet152': Bottleneck
+}
+layer_cfg = {
+    'resnet18': [2, 2, 2, 2],
+    'resnet34': [3, 4, 6, 3],
+    'resnet50': [3, 4, 6, 3],
+    'resnet101': [3, 4, 23, 3],
+    'resnet152': [3, 8, 36, 3]
+}
 
 def conv3x3(in_planes, out_planes, stride=1, groups=1, dilation=1):
     """3x3 convolution with padding"""
     return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
                      padding=dilation, groups=groups, bias=False, dilation=dilation)
 
-
 def conv1x1(in_planes, out_planes, stride=1):
     """1x1 convolution"""
     return nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, bias=False)
-
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -57,7 +72,6 @@ class BasicBlock(nn.Module):
         out = self.relu(out)
 
         return out
-
 
 class Bottleneck(nn.Module):
     expansion = 4
@@ -102,26 +116,47 @@ class Bottleneck(nn.Module):
 
         return out
 
-block_cfg = {
-    'resnet18': BasicBlock,
-    'resnet34': BasicBlock,
-    'resnet50': Bottleneck,
-    'resnet101': Bottleneck,
-    'resnet152': Bottleneck
-}
-layer_cfg = {
-    'resnet18': [2, 2, 2, 2],
-    'resnet34': [3, 4, 6, 3],
-    'resnet50': [3, 4, 6, 3],
-    'resnet101': [3, 4, 23, 3],
-    'resnet152': [3, 8, 36, 3]
-}
+class Resnet(ResNet):
+    def __init__(self, pretrained=True, model='resnet50', requires_grad=True, remove_fc=True, show_params=False):
+        super(Resnet, self).__init__(block_cfg[model], layer_cfg[model])
 
+        if pretrained:
+            exec("self.load_state_dict(models.%s(pretrained=True).state_dict())" % model)
 
-class FCN(nn.Module):
+        if not requires_grad:
+            for param in super().parameters():
+                param.requires_grad = False
+
+        if remove_fc:  # delete redundant fully-connected layer params, can save memory
+            del self.avgpool
+            del self.fc
+
+        if show_params:
+            for name, param in self.named_parameters():
+                print(name, param.size())
+
+    def forward(self, x):
+        output = {}
+
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
+        output["x1"] = x
+        x = self.layer1(x)
+        output["x2"] = x
+        x = self.layer2(x)
+        output["x3"] = x
+        x = self.layer3(x)
+        output["x4"] = x
+        x = self.layer4(x)
+        output["x5"] = x
+        return output
+
+class BarcodeNet(nn.Module):
 
     def __init__(self, n_class=2, pretrained=True):
-        super(FCN, self).__init__()
+        super(BarcodeNet, self).__init__()
         self.n_class = n_class
         resnet = Resnet(model='resnet50', pretrained=pretrained)
         self.layer0 = nn.Sequential(resnet.conv1, resnet.bn1, resnet.relu, resnet.maxpool)
@@ -171,44 +206,33 @@ class FCN(nn.Module):
 
         return score
 
+def predict_mask(img, net):
+    
+    means = np.array([103.939, 116.779, 123.68]) / 255.
+    img = img[:, 160:1120]
+    img = cv2.resize(img, (640, 480), interpolation=cv2.INTER_NEAREST)
+    img = img / 255.
+    img[:, :, 0] -= means[0]
+    img[:, :, 1] -= means[1]
+    img[:, :, 2] -= means[2]
 
-class Resnet(ResNet):
-    def __init__(self, pretrained=True, model='resnet50', requires_grad=True, remove_fc=True, show_params=False):
-        super(Resnet, self).__init__(block_cfg[model], layer_cfg[model])
+    x = torch.from_numpy(img).float().permute(2, 0, 1)
+    x = x.unsqueeze(0)
+    if(torch.cuda.is_available()):
+        x = x.cuda()
+    output = net(x)
+    output = output.data.cpu().numpy()
+    _, _, h, w = output.shape
+    pred = output.transpose(0, 2, 3, 1).reshape(-1, len(n_class)).argmax(axis=1).reshape(1, h, w)
+    pred = pred[0]
+    pred = np.int8(pred)
 
-        if pretrained:
-            exec("self.load_state_dict(models.%s(pretrained=True).state_dict())" % model)
+    mask = np.zeros((720, 1280))
+    predict = cv2.resize(pred, (960, 720), interpolation=cv2.INTER_NEAREST)
+    mask[:, 160:1120] = predict
+    mask[mask != 0] = 255
+    mask = mask.astype(np.uint8)
 
-        if not requires_grad:
-            for param in super().parameters():
-                param.requires_grad = False
-
-        if remove_fc:  # delete redundant fully-connected layer params, can save memory
-            del self.avgpool
-            del self.fc
-
-        if show_params:
-            for name, param in self.named_parameters():
-                print(name, param.size())
-
-    def forward(self, x):
-        output = {}
-
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
-        x = self.maxpool(x)
-        output["x1"] = x
-        x = self.layer1(x)
-        output["x2"] = x
-        x = self.layer2(x)
-        output["x3"] = x
-        x = self.layer3(x)
-        output["x4"] = x
-        x = self.layer4(x)
-        output["x5"] = x
-        return output
+    return mask
 
 
-def build_fcn_resnet(n_class=2):
-    return FCN(n_class=n_class)
