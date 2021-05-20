@@ -1,0 +1,3 @@
+[submodule "model/carafe"]
+	path = model/carafe
+	url = https://github.com/myownskyW7/CARAFE.git
