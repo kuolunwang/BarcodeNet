@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import torch
 import torch.nn as nn
-from ResNet import Resnet
+from ResNet import Resnet, conv1x1
 import numpy as np
 import cv2
 from carafe import CARAFEPack
