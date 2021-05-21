@@ -110,7 +110,7 @@ layer_cfg = {
     'resnet152': [3, 8, 36, 3]
 }
 
-class ResNet(ResNet):
+class Resnet(ResNet):
     def __init__(self, pretrained=True, model='resnet50', requires_grad=True, remove_fc=True, show_params=False):
         super(Resnet, self).__init__(block_cfg[model], layer_cfg[model])
 

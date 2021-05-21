@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import torch
 import torch.nn as nn
-from ResNet import ResNet
+from ResNet import Resnet
 import numpy as np
 import cv2
 from carafe import CARAFEPack
@@ -12,7 +12,7 @@ class BarcodeNet(nn.Module):
     def __init__(self, n_class=2, pretrained=True):
         super(BarcodeNet, self).__init__()
         self.n_class = n_class
-        resnet = ResNet(model='resnet50', pretrained=pretrained)
+        resnet = Resnet(model='resnet50', pretrained=pretrained)
         self.layer0 = nn.Sequential(resnet.conv1, resnet.bn1, resnet.relu, resnet.maxpool)
         self.layer1, self.layer2, self.layer3, self.layer4 = resnet.layer1, resnet.layer2, resnet.layer3, resnet.layer4
         for n, m in self.layer3.named_modules():
