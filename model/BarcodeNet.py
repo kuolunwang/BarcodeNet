@@ -77,7 +77,7 @@ def predict_mask(img, net):
     output = net(x)
     output = output.data.cpu().numpy()
     _, _, h, w = output.shape
-    pred = output.transpose(0, 2, 3, 1).reshape(-1, len(n_class)).argmax(axis=1).reshape(1, h, w)
+    pred = output.transpose(0, 2, 3, 1).reshape(-1, n_class).argmax(axis=1).reshape(1, h, w)
     pred = pred[0]
     pred = np.int8(pred)
 
