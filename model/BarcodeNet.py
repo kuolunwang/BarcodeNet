@@ -59,34 +59,3 @@ class BarcodeNet(nn.Module):
         score = self.classifier(score)
 
         return score
-
-def predict_mask(img, net):
-    
-    means = np.array([103.939, 116.779, 123.68]) / 255.
-    img = img[:, 160:1120]
-    img = cv2.resize(img, (640, 480), interpolation=cv2.INTER_NEAREST)
-    img = img / 255.
-    img[:, :, 0] -= means[0]
-    img[:, :, 1] -= means[1]
-    img[:, :, 2] -= means[2]
-
-    x = torch.from_numpy(img).float().permute(2, 0, 1)
-    x = x.unsqueeze(0)
-    if(torch.cuda.is_available()):
-        x = x.cuda()
-    output = net(x)
-    output = output.data.cpu().numpy()
-    _, _, h, w = output.shape
-    pred = output.transpose(0, 2, 3, 1).reshape(-1, n_class).argmax(axis=1).reshape(1, h, w)
-    pred = pred[0]
-    pred = np.int8(pred)
-
-    mask = np.zeros((720, 1280))
-    predict = cv2.resize(pred, (960, 720), interpolation=cv2.INTER_NEAREST)
-    mask[:, 160:1120] = predict
-    mask[mask != 0] = 255
-    mask = mask.astype(np.uint8)
-
-    return mask
-
-
