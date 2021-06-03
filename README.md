@@ -13,5 +13,5 @@ This is ros package for BarcodeNet, you need to clone this repo for your workspa
 
 ## Start predict by BarcodeNet
 ```
-     $ roslaunch barcode_detect barcode_predict.launch
+     $ roslaunch barcode_detection barcode_predict.launch
 ```
