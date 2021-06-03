@@ -1,3 +1,0 @@
-[submodule "model/carafe"]
-	path = barcodde_detection/src/model/carafe
-	url = git@github.com:myownskyW7/CARAFE.git

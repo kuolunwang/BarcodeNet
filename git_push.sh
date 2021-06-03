@@ -8,7 +8,7 @@ fi
 echo "commit: $1"
 
 COMMIT=$1
-BRANCH=master
+BRANCH=package
 
 if [ ! -z "$2" ]; then
     echo "operator on branch: $2"

@@ -1,7 +1,7 @@
 #! /bin/bash
 
 current_path=$(pwd)
-BRANCH=master
+BRANCH=package
 if [ ! -z "$1" ]; then
     echo "pull branch: $1"
     BRANCH=$1
@@ -21,7 +21,7 @@ fi
 echo "-----------------------------------------------------------------------"
 echo "-------------------------pull carafe-----------------------------------"
 echo "-----------------------------------------------------------------------"
-cd $current_path/model/carafe
+cd $current_path/barcode_detection/src/model/carafe
 git checkout $BRANCH
 git pull
 
