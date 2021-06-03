@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# echo "password: $2"
+current_path=$(pwd)
 BRANCH=master
 if [ ! -z "$1" ]; then
     echo "pull branch: $1"
@@ -21,15 +21,15 @@ fi
 echo "-----------------------------------------------------------------------"
 echo "-------------------------pull carafe-----------------------------------"
 echo "-----------------------------------------------------------------------"
-cd ~/BarcodeNet/model/carafe
+cd $current_path/model/carafe
 git checkout $BRANCH
 git pull
 
 CONFLICTS=$(git ls-files -u | wc -l)
 if [ "$CONFLICTS" -gt 0 ] ; then
-   echo "There is conflict in interbotix_ros_arms. Aborting"
+   echo "There is conflict in carafe. Aborting"
    return 1
 fi
 
-cd ~/BarcodeNet
+cd $current_path
 return 0

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-
+current_path=$(pwd)
 if [ ! "$1" ]; then
     echo "commit detail please"
     return
@@ -19,25 +19,16 @@ source git_pull.sh $BRANCH
 PULLSTAT=$?
 if [ "$PULLSTAT" -gt 0 ] ; then
    echo "There is conflict. Aborting"
-   cd ~/BarcodeNet/
+   cd $current_path/
    return
 fi
 echo "-------------------------pull success----------------------------------"
 
-# push pyrobot
-echo "-----------------------------------------------------------------------"
-echo "-------------------------push carafe----------------------------------"
-echo "-----------------------------------------------------------------------"
-cd ~/BarcodeNet/model/carafe
-git add -A
-git commit -m "$1 on core"
-git push
-
 # push main
 echo "-----------------------------------------------------------------------"
-echo "-------------------------push BarcodeNet----------------------"
+echo "-------------------------push BarcodeNet-------------------------------"
 echo "-----------------------------------------------------------------------"
-cd ~/BarcodeNet/
+cd $current_path/
 git add -A
 git commit -m "$1"
 git push 
