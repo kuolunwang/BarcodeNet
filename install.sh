@@ -14,4 +14,4 @@ echo "alias BarcodeNet='source ${VIRTUALENV_FOLDER}/bin/activate '" >> ~/.bashrc
 source ~/.bashrc
 
 # install carafe module
-cd model/carafe && python3 setup.py develop
+cd barcodde_detection/src/model/carafe && python3 setup.py develop
