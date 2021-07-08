@@ -13,7 +13,6 @@ from model.BarcodeNet import BarcodeNet
 from sensor_msgs.msg import Image
 from barcode_detection.srv import GetPrediction, GetPredictionResponse
 
-
 class Prediction:
     def __init__(self):
         self.cv_bridge = CvBridge()
@@ -56,7 +55,7 @@ class Prediction:
         predict = self.predict(cv_image)
 
         _ = self.confirm_barcode(cv_image, predict)
-        
+
         self.image_pub.publish(self.cv_bridge.cv2_to_imgmsg(cv_image, "bgr8"))
         self.mask_pub.publish(self.cv_bridge.cv2_to_imgmsg(predict, "8UC1"))
 
@@ -71,7 +70,7 @@ class Prediction:
         x = x.unsqueeze(0)
         if self.use_gpu:
             x = x.cuda()
-        output = self.network(x)
+        output = self.net(x)
         output = output.data.cpu().numpy()
         _, _, h, w = output.shape
         pred = output.transpose(0, 2, 3, 1).reshape(-1, len(self.labels)).argmax(axis=1).reshape(1, h, w)
@@ -85,7 +84,7 @@ class Prediction:
 
     def confirm_barcode(self, img ,mask, threshold=0):
 
-        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        _, contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         cv2.drawContours(img,contours,-1,(0,0,255),1) 
         
         area_list = []
