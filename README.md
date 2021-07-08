@@ -7,7 +7,7 @@ This is ros package for BarcodeNet, you need to clone this repo for your workspa
 ```
      $ cd [your workspace]/src && git clone --recursive git@github.com:kuolunwang/BarcodeNet.git
      $ cd BarcodeNet && source install.sh
-     $ cd [your workspace] && catkin make
+     $ cd [your workspace] && catkin_make
 ```
 
 ## Start predict by BarcodeNet
