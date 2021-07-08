@@ -18,7 +18,7 @@ class Prediction:
     def __init__(self):
         self.cv_bridge = CvBridge()
         r = rospkg.RosPack()
-        path = os.paht.join(r.get_path('barcode_detection'), "weight")
+        path = os.path.join(r.get_path('barcode_detection'), "weight")
             
         self.labels = ['background', 'barcode']
         self.net = BarcodeNet(len(self.labels))
@@ -35,11 +35,9 @@ class Prediction:
         self.net.load_state_dict(torch.load(model_path))
         self.net.eval()
 
-        # Services
-        rospy.Service('~/barcode_predict', GetPrediction, self.predict_cb)
-
-        # Publisher
-        # self.pre_re = rospy.Publisher('~/predicted_result', Image, queue_size=10)
+        self.image_pub = rospy.Publisher("~predict_img", Image, queue_size = 1)
+        self.mask_pub = rospy.Publisher("~mask", Image, queue_size = 1)
+        self.img_sub = rospy.Subscriber('/camera/color/image_raw', Image, self.predict_cb)
 
         rospy.loginfo('barcode predict node ready!')
 
@@ -53,16 +51,14 @@ class Prediction:
         print("Finished downloading model.")
         return os.path.join(path, model_name + '.pkl')
 
-    def predict_cb(self, req):
-        img_msg = rospy.wait_for_message('/camera/color/image_raw', Image)
-        cv_image = self.cv_bridge.imgmsg_to_cv2(img_msg, "bgr8")
+    def predict_cb(self, msg):
+        cv_image = self.cv_bridge.imgmsg_to_cv2(msg, "bgr8")
         predict = self.predict(cv_image)
-        pred[pred != 0 ] = 255
-        mask = pred.astype(np.uint8)
-        # _ = self.confirm_barcode(cv_image, mask)
-        res = GetPredictionResponse()
-        res.result = self.cv_bridge.cv2_to_imgmsg(mask, "8UC1")
-        return res 
+
+        _ = self.confirm_barcode(cv_image, predict)
+        
+        self.image_pub.publish(self.cv_bridge.cv2_to_imgmsg(cv_image, "bgr8"))
+        self.mask_pub.publish(self.cv_bridge.cv2_to_imgmsg(predict, "8UC1"))
 
     def predict(self, img):
         means = np.array([103.939, 116.779, 123.68]) / 255.
@@ -81,6 +77,10 @@ class Prediction:
         pred = output.transpose(0, 2, 3, 1).reshape(-1, len(self.labels)).argmax(axis=1).reshape(1, h, w)
         pred = pred[0]
         pred = np.int8(pred)
+
+        pred[pred != 0 ] = 255
+        pred = pred.astype(np.uint8)
+
         return pred
 
     def confirm_barcode(self, img ,mask, threshold=0):
