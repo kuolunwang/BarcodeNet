@@ -11,7 +11,6 @@ import torch
 import torch.nn as nn
 from model.BarcodeNet import BarcodeNet
 from sensor_msgs.msg import Image
-from barcode_detection.srv import GetPrediction, GetPredictionResponse
 
 class Prediction:
     def __init__(self):

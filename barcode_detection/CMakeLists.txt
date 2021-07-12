@@ -10,7 +10,6 @@ project(barcode_detection)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
-  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -54,10 +53,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate services in the 'srv' folder
-add_service_files(
-  FILES
-  GetPrediction.srv
-)
+#add_service_files(
+#  FILES
+#  srv1.srv
+#)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
