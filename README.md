@@ -5,8 +5,6 @@ This is ros package for BarcodeNet, you need to clone this repo for your workspa
 
 ## How to Use BarcodeNet
 
----
-
 ```
      cd [your workspace]/src && git clone --recursive git@github.com:kuolunwang/BarcodeNet.git
      cd BarcodeNet && source install.sh
@@ -15,8 +13,6 @@ This is ros package for BarcodeNet, you need to clone this repo for your workspa
 
 ## Start Predict by BarcodeNet
 
----
-
 Launch this file and open Rviz to see predicted result and mask. **Please make sure you open camera before launch predict file, in this case, we use D435 for example.**
 ```
      roslaunch barcode_detection barcode_predict.launch
@@ -24,16 +20,12 @@ Launch this file and open Rviz to see predicted result and mask. **Please make s
 
 ## Topic List
 
----
-
 | Topic Name | Topic Type | Topic Description |
 |:--------:|:--------:|:--------:|
 | /BarcodeNet/predict_img | [Image](http://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/Image.html)| This topic will show predicted result in origin img|
 | /BarcodeNet/mask | [Image](http://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/Image.html) | This topic will show predicted mask with binary format |
 
 ## Related Information
-
----
 
 We provided [dataset](https://drive.google.com/drive/folders/13o1_pha07T4vPZWcdGhQLQwVct_67r1d?usp=sharing) and its [pre-trained weight](https://drive.google.com/file/d/1-K8VKhCRbl6e3E26RYxtI_VY4skxTbcc/view?usp=sharing), also provided a simple inference on colab.
 
