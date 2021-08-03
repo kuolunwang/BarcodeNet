@@ -33,14 +33,14 @@ class Prediction:
         self.net.load_state_dict(torch.load(model_path))
         self.net.eval()
 
-        self.image_pub = rospy.Publisher("~predict_img", Image, queue_size = 1)
-        self.mask_pub = rospy.Publisher("~mask", Image, queue_size = 1)
+        self.image_pub = rospy.Publisher("/BarcodeNet/predict_img", Image, queue_size = 1)
+        self.mask_pub = rospy.Publisher("/BarcodeNet/mask", Image, queue_size = 1)
         self.img_sub = rospy.Subscriber('/camera/color/image_raw', Image, self.predict_cb)
 
         rospy.loginfo('barcode predict node ready!')
 
     def __download_model(self, path):
-        model_url = 'https://drive.google.com/uc?export=download&id=1gu71PIYOfLR1J3Dq8YIvV-m-1OLDrPHh'
+        model_url = 'https://drive.google.com/uc?export=download&id=1-K8VKhCRbl6e3E26RYxtI_VY4skxTbcc'
         model_name = 'barcodenet'
 
         if not os.path.exists(os.path.join(path, model_name + '.pkl')):
